@@ -38,10 +38,10 @@ public class Constants {
             System.getProperty("user.dir") + File.separator + ".." + File.separator + "output-artifacts/";
 
     // Do not use forward slash at the beginning instead use it in the base url.
-    public static final String URL_PARTITION = "partition";
-    public static final String URL_POLICY_AUTOSCALE = "policy" + File.separator + "autoscale";
-    public static final String URL_CARTRIDGE = "cartridge" + File.separator + "list";
-    public static final String URL_POLICY_DEPLOYMENT = "policy" + File.separator + "deployment";
+    public static final String URL_PARTITION = "/partition";
+    public static final String URL_POLICY_AUTOSCALE = "/policy/autoscale";
+    public static final String URL_CARTRIDGE = "/cartridge/list";
+    public static final String URL_POLICY_DEPLOYMENT = "/policy/deployment";
 
     // Do not use forward slash at the beginning instead use it in the root directory.
     public static final String DIRECTORY_TEMPLATE_POLICY_AUTOSCALE =

@@ -19,25 +19,18 @@ package org.wso2.ppaas.tools.artifactmigration.loader;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
 import org.apache.stratos.manager.dto.Cartridge;
 import org.apache.stratos.rest.endpoint.bean.autoscaler.partition.Partition;
 import org.apache.stratos.rest.endpoint.bean.autoscaler.policy.autoscale.AutoscalePolicy;
 import org.apache.stratos.rest.endpoint.bean.autoscaler.policy.deployment.DeploymentPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.ppaas.tools.artifactmigration.ArtifactConverterRestClient;
+import org.wso2.ppaas.tools.artifactmigration.HttpResponse;
 
 import java.io.IOException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -49,13 +42,14 @@ public class OldArtifactLoader {
 
     private static OldArtifactLoader instance = null;
     private Gson gson;
-    private HttpClient httpClient;
+    private ArtifactConverterRestClient restClient;
 
-    private OldArtifactLoader() {
+    private OldArtifactLoader() throws Exception {
         gson = new Gson();
+        restClient = new ArtifactConverterRestClient("admin", "admin");
     }
 
-    public static synchronized OldArtifactLoader getInstance() {
+    public static synchronized OldArtifactLoader getInstance() throws Exception {
         if (instance == null) {
             synchronized (OldArtifactLoader.class) {
                 if (instance == null) {
@@ -178,41 +172,11 @@ public class OldArtifactLoader {
     //            throw e;
     //        }
     //    }
-    private String readUrl(String serviceEndpoint) throws Exception {
-        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(100);
-        cm.setDefaultMaxPerRoute(100);
-        RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT).setSocketTimeout(120000)
-                .setConnectTimeout(120000).setConnectionRequestTimeout(120000).build();
-
-        SSLContextBuilder builder = new SSLContextBuilder();
-        SSLConnectionSocketFactory sslConnectionFactory;
-        builder.loadTrustMaterial(null, new TrustStrategy() {
-            @Override public boolean isTrusted(X509Certificate[] x509Certificates, String s)
-                    throws CertificateException {
-                return true;
-            }
-        });
-        sslConnectionFactory = new SSLConnectionSocketFactory(builder.build());
-        this.httpClient = HttpClients.custom().setSSLSocketFactory(sslConnectionFactory).setConnectionManager(cm)
-                .create().setDefaultRequestConfig(requestConfig).build();
-
-        try {
-            HttpGet getRequest = new HttpGet(serviceEndpoint);
-            getRequest.addHeader("Content-Type", "application/json");
-            String userPass = Constants.USER_NAME + ":" + Constants.PASSWORD;
-            ;
-            String basicAuth =
-                    "Basic " + javax.xml.bind.DatatypeConverter.printBase64Binary(userPass.getBytes("UTF-8"));
-            getRequest.addHeader("Authorization", basicAuth);
-
-            HttpResponse httpResponse = httpClient.execute(getRequest);
-
-            return httpResponse.getEntity().getContent().toString();
-
-        } finally {//releaseConnection(getRequest);
+    private String readUrl(String serviceEndpoint) throws IOException, URISyntaxException {
+        if (log.isDebugEnabled()) {
+            log.debug("Reading URL: " + serviceEndpoint);
         }
-
+        HttpResponse httpResponse = restClient.doGet(new URI(serviceEndpoint));
+        return httpResponse.getContent();
     }
-
 }
