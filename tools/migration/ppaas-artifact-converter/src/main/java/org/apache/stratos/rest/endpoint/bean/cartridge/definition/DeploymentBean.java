@@ -17,43 +17,44 @@
  * under the License.
  */
 
-package org.apache.stratos.rest.endpoint.bean.autoscaler.policy.deployment;
-
-import org.apache.stratos.rest.endpoint.bean.autoscaler.partition.PartitionGroup;
-import org.apache.stratos.rest.endpoint.bean.autoscaler.partition.Partition;
+package org.apache.stratos.rest.endpoint.bean.cartridge.definition;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-@XmlRootElement public class DeploymentPolicy {
+@XmlRootElement(name = "deployment") public class DeploymentBean {
 
-    private String id;
-    //partition groups
-    private List<PartitionGroup> partitionGroup;
-    //partitions
-    private List<Partition> partition;
+    private String baseDir;
+    private List<String> dir;
 
-    public String getId() {
-        return id;
+    public String toString() {
+        return " Base Directory: " + baseDir + " Directories: " + getDirectories();
     }
 
-    public void setId(String id) {
-        this.id = id;
+    private String getDirectories() {
+
+        StringBuilder directoryBuilder = new StringBuilder();
+        if (dir != null) {
+            for (String directory : dir) {
+                directoryBuilder.append(directory + " | ");
+            }
+        }
+        return directoryBuilder.toString();
     }
 
-    public List<PartitionGroup> getPartitionGroup() {
-        return partitionGroup;
+    public String getBaseDir() {
+        return baseDir;
     }
 
-    public void setPartitionGroup(List<PartitionGroup> partitionGroup) {
-        this.partitionGroup = partitionGroup;
+    public void setBaseDir(String baseDir) {
+        this.baseDir = baseDir;
     }
 
-    public List<Partition> getPartition() {
-        return partition;
+    public List<String> getDir() {
+        return dir;
     }
 
-    public void setPartition(List<Partition> partition) {
-        this.partition = partition;
+    public void setDir(List<String> dir) {
+        this.dir = dir;
     }
 }

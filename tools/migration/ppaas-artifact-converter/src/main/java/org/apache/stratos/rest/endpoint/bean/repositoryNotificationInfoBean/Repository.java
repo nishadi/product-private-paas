@@ -17,38 +17,27 @@
  * under the License.
  */
 
-package org.apache.stratos.rest.endpoint.bean.autoscaler.policy.autoscale;
+package org.apache.stratos.rest.endpoint.bean.repositoryNotificationInfoBean;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement public class LoadThresholds {
+@XmlRootElement(name = "repository") public class Repository {
+    private String url;
+    private String description;
 
-    private RequestsInFlight requestsInFlight;
-    private MemoryConsumption memoryConsumption;
-    private LoadAverage loadAverage;
-
-    public void setRequestsInFlight(RequestsInFlight requestsInFlight) {
-        this.requestsInFlight = requestsInFlight;
+    public String getUrl() {
+        return url;
     }
 
-    public RequestsInFlight getRequestsInFlight() {
-        return requestsInFlight;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
-    public void setMemoryConsumption(MemoryConsumption memoryConsumption) {
-        this.memoryConsumption = memoryConsumption;
+    public String getDescription() {
+        return description;
     }
 
-    public MemoryConsumption getMemoryConsumption() {
-        return memoryConsumption;
+    public void setDescription(String description) {
+        this.description = description;
     }
-
-    public void setLoadAverage(LoadAverage requestsInFlight) {
-        this.loadAverage = loadAverage;
-    }
-
-    public LoadAverage getLoadAverage() {
-        return loadAverage;
-    }
-
 }

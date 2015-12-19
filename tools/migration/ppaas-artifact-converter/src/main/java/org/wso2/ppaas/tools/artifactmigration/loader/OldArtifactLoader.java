@@ -19,19 +19,18 @@ package org.wso2.ppaas.tools.artifactmigration.loader;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.log4j.Logger;
 import org.apache.stratos.manager.dto.Cartridge;
-import org.apache.stratos.rest.endpoint.bean.CartridgeInfoBean;
 import org.apache.stratos.rest.endpoint.bean.autoscaler.partition.Partition;
 import org.apache.stratos.rest.endpoint.bean.autoscaler.policy.autoscale.AutoscalePolicy;
 import org.apache.stratos.rest.endpoint.bean.autoscaler.policy.deployment.DeploymentPolicy;
-import org.apache.stratos.rest.endpoint.bean.subscription.domain.SubscriptionDomainBean;
-import org.wso2.ppaas.tools.artifactmigration.RestClient;
-import org.wso2.ppaas.tools.artifactmigration.exception.ArtifactLoadingException;
-import org.wso2.ppaas.tools.artifactmigration.exception.RestClientException;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wso2.ppaas.tools.artifactmigration.ArtifactConverterRestClient;
+import org.wso2.ppaas.tools.artifactmigration.HttpResponse;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -39,188 +38,145 @@ import java.util.List;
  */
 public class OldArtifactLoader {
 
-    private static final Logger log = Logger.getLogger(OldArtifactLoader.class);
-    private static final Gson gson = new Gson();
+    private static final Logger log = LoggerFactory.getLogger(OldArtifactLoader.class);
+
+    private static OldArtifactLoader instance = null;
+    private Gson gson;
+    private ArtifactConverterRestClient restClient;
+
+    private OldArtifactLoader() throws Exception {
+        gson = new Gson();
+        restClient = new ArtifactConverterRestClient("admin", "admin");
+    }
+
+    public static synchronized OldArtifactLoader getInstance() throws Exception {
+        if (instance == null) {
+            synchronized (OldArtifactLoader.class) {
+                if (instance == null) {
+                    instance = new OldArtifactLoader();
+                }
+            }
+        }
+        return instance;
+    }
 
     /**
-     * Method to fetch Partition Lists from PPaaS 4.0.0. API endpoint
+     * Method to fetch Partition Lists
      *
      * @return Partition List
-     * @throws ArtifactLoadingException
+     * @throws IOException
      */
-    public static List<Partition> fetchPartitionList() throws ArtifactLoadingException {
+    public List<Partition> fetchPartitionList() throws Exception {
         try {
-            String partitionString = readUrl(System.getProperty(Constants.BASE_URL400) + Constants.URL_PARTITION);
-            String partitionListString = null;
-            if (partitionString != null) {
-                partitionListString = partitionString
-                        .substring(partitionString.indexOf('['), (partitionString.lastIndexOf(']') + 1));
-            }
+            String partitionString = readUrl(Constants.BASE_URL + Constants.URL_PARTITION);
+            String partitionListString = partitionString
+                    .substring(partitionString.indexOf('['), (partitionString.lastIndexOf(']') + 1));
             return gson.fromJson(partitionListString, new TypeToken<List<Partition>>() {
             }.getType());
-        } catch (RestClientException e) {
-            String msg = "Rest endpoint connection error in fetching partition list";
-            log.error(msg);
-            throw new ArtifactLoadingException(msg, e);
+        } catch (IOException e) {
+            log.error("IOException in fetching partition list");
+            throw e;
         }
     }
 
     /**
-     * Method to fetch Auto Scale Policy from PPaaS 4.0.0. API endpoint
+     * Method to fetch Auto Scale Policy
      *
      * @return Auto Scale Policy List
-     * @throws ArtifactLoadingException
+     * @throws IOException
      */
-    public static List<AutoscalePolicy> fetchAutoscalePolicyList() throws ArtifactLoadingException {
+    public List<AutoscalePolicy> fetchAutoscalePolicyList() throws Exception {
         try {
-            String autoscalePolicyString = readUrl(System.getProperty(Constants.BASE_URL400) + Constants.URL_POLICY_AUTOSCALE);
-            String autoscalePolicyListString;
-            if (autoscalePolicyString != null) {
-                autoscalePolicyListString = autoscalePolicyString
-                        .substring(autoscalePolicyString.indexOf('['), (autoscalePolicyString.lastIndexOf(']') + 1));
-            } else {
-                String msg = "Error while fetching autoscaling policies";
-                log.error(msg);
-                throw new ArtifactLoadingException(msg);
-            }
+            String autoscalePolicyString = readUrl(Constants.BASE_URL + Constants.URL_POLICY_AUTOSCALE);
+            String autoscalePolicyListString = autoscalePolicyString
+                    .substring(autoscalePolicyString.indexOf('['), (autoscalePolicyString.lastIndexOf(']') + 1));
             return gson.fromJson(autoscalePolicyListString, new TypeToken<List<AutoscalePolicy>>() {
             }.getType());
-        } catch (RestClientException e) {
-            String msg = "Rest endpoint connection error in fetching autoscaling policy list";
-            log.error(msg);
-            throw new ArtifactLoadingException(msg, e);
+        } catch (IOException e) {
+            log.error("IOException in fetching auto scale policy list");
+            throw e;
         }
     }
 
     /**
-     * Method to fetch Deployment Policy from PPaaS 4.0.0. API endpoint
+     * Method to fetch Deployment Policy
      *
      * @return Deployment Policy List
-     * @throws ArtifactLoadingException
+     * @throws IOException
      */
-    public static List<DeploymentPolicy> fetchDeploymentPolicyList() throws ArtifactLoadingException {
+    public List<DeploymentPolicy> fetchDeploymentPolicyList() throws Exception {
         try {
-            String deploymentPolicyString = readUrl(System.getProperty(Constants.BASE_URL400) + Constants.URL_POLICY_DEPLOYMENT);
-            String deploymentPolicyListString;
-            if (deploymentPolicyString != null) {
-                deploymentPolicyListString = deploymentPolicyString
-                        .substring(deploymentPolicyString.indexOf('['), (deploymentPolicyString.lastIndexOf(']') + 1));
-            } else {
-                String msg = "Error while fetching deployment policies";
-                log.error(msg);
-                throw new ArtifactLoadingException(msg);
-            }
+            String deploymentPolicyString = readUrl(Constants.BASE_URL + Constants.URL_POLICY_DEPLOYMENT);
+            String deploymentPolicyListString = deploymentPolicyString
+                    .substring(deploymentPolicyString.indexOf('['), (deploymentPolicyString.lastIndexOf(']') + 1));
             return gson.fromJson(deploymentPolicyListString, new TypeToken<List<DeploymentPolicy>>() {
             }.getType());
-        } catch (RestClientException e) {
-            String msg = "Rest endpoint connection error in fetching deployment policy list";
-            log.error(msg);
-            throw new ArtifactLoadingException(msg, e);
+        } catch (IOException e) {
+            log.error("IOException in fetching deployment policy list");
+            throw e;
         }
     }
 
     /**
-     * Method to fetch Cartridges from PPaaS 4.0.0. API endpoint
+     * Method to fetch Cartridges
      *
      * @return Cartridges List
-     * @throws ArtifactLoadingException
+     * @throws IOException
      */
-    public static List<Cartridge> fetchCartridgeList() throws ArtifactLoadingException {
+    public List<Cartridge> fetchCartridgeList() throws Exception {
         try {
-            String cartridgeString = readUrl(System.getProperty(Constants.BASE_URL400) + Constants.URL_CARTRIDGE);
-            String cartridgeListString;
-            if (cartridgeString != null) {
-                cartridgeListString = cartridgeString
-                        .substring(cartridgeString.indexOf('['), (cartridgeString.lastIndexOf(']') + 1));
-            } else {
-                String msg = "Error while fetching cartridge lists";
-                log.error(msg);
-                throw new ArtifactLoadingException(msg);
-            }
+            String cartridgeString = readUrl(Constants.BASE_URL + Constants.URL_CARTRIDGE);
+            String cartridgeListString = cartridgeString
+                    .substring(cartridgeString.indexOf('['), (cartridgeString.lastIndexOf(']') + 1));
             return gson.fromJson(cartridgeListString, new TypeToken<List<Cartridge>>() {
             }.getType());
-        } catch (RestClientException e) {
-            String msg = "Rest endpoint connection error in fetching deployment policy list";
-            log.error(msg);
-            throw new ArtifactLoadingException(msg, e);
+        } catch (IOException e) {
+            log.error("IOException in fetching cartridge list");
+            throw e;
         }
     }
 
     /**
-     * Method to fetch Cartridges from PPaaS 4.0.0. API endpoint
-     *
-     * @return Cartridges List
-     * @throws ArtifactLoadingException
-     */
-    public static List<CartridgeInfoBean> fetchSubscriptionDataList() throws ArtifactLoadingException {
-        try {
-            String cartridgeString = readUrl(System.getProperty(Constants.BASE_URL400) + Constants.URL_SUBSCRIPTION);
-            String cartridgeListString;
-            if (cartridgeString != null) {
-                cartridgeListString = cartridgeString
-                        .substring(cartridgeString.indexOf('['), (cartridgeString.lastIndexOf(']') + 1));
-            } else {
-                String msg = "Error while fetching subscription data list";
-                log.error(msg);
-                throw new ArtifactLoadingException(msg);
-            }
-            return gson.fromJson(cartridgeListString, new TypeToken<List<CartridgeInfoBean>>() {
-            }.getType());
-
-        } catch (RestClientException e) {
-            String msg = "Rest endpoint connection error in fetching deployment policy list";
-            log.error(msg);
-            throw new ArtifactLoadingException(msg, e);
-        }
-    }
-
-    /**
-     * Method to fetch domain mapping list from PPaaS 4.0.0. API endpoint
-     *
-     * @param cartridgeType cartridge type
-     * @param subscriptionAlias subscription alias
-     * @return domain mapping
-     * @throws ArtifactLoadingException
-     */
-    public static List<SubscriptionDomainBean> fetchDomainMappingList(String cartridgeType, String subscriptionAlias)
-            throws ArtifactLoadingException {
-        try {
-            String domainString = readUrl(
-                    System.getProperty(Constants.BASE_URL400) + Constants.STRATOS + "cartridge" + File.separator + cartridgeType
-                            + File.separator + "subscription" + File.separator + subscriptionAlias + File.separator
-                            + "domains");
-            String domainListString;
-            if (domainString != null) {
-                domainListString = domainString
-                        .substring(domainString.indexOf('['), (domainString.lastIndexOf(']') + 1));
-            } else {
-                String msg = "Error while fetching domain mapping lists";
-                log.error(msg);
-                throw new ArtifactLoadingException(msg);
-            }
-            return gson.fromJson(domainListString, new TypeToken<List<SubscriptionDomainBean>>() {
-            }.getType());
-        } catch (RestClientException e) {
-            String msg = "Rest endpoint connection error in fetching deployment policy list";
-            log.error(msg);
-            throw new ArtifactLoadingException(msg, e);
-        }
-    }
-    /**
-     * Method to connect to the REST endpoint with authorization
+     * Method to connect to the REST endpoint without authorization
      *
      * @param serviceEndpoint the endpoint to connect with
      * @return JSON string
+     * @throws IOException in connecting to REST endpoint
      */
-    private static String readUrl(String serviceEndpoint) throws RestClientException {
-        RestClient restclient = new RestClient(System.getProperty(Constants.USERNAME400), System.getProperty(Constants.PASSWORD400));
-        try {
-            return restclient.doGet(new URL(serviceEndpoint));
-        } catch (MalformedURLException e) {
-            String msg = "Error in parsing the URL";
-            log.error(msg);
-            throw new RestClientException(msg, e);
+    //    private String readUrl(String serviceEndpoint) throws IOException {
+    //        try {
+    //            String authString = Constants.USER_NAME + ":" + Constants.PASSWORD;
+    //            byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+    //            String authStringEnc = new String(authEncBytes);
+    //
+    //            URL absoluteURL = new URL(serviceEndpoint);
+    //            URLConnection urlConnection = absoluteURL.openConnection();
+    //            urlConnection.setRequestProperty("Authorization", "Basic " + authStringEnc);
+    //            InputStream is = urlConnection.getInputStream();
+    //            InputStreamReader isr = new InputStreamReader(is);
+    //
+    //            int numCharsRead;
+    //            char[] charArray = new char[1024];
+    //            StringBuffer sb = new StringBuffer();
+    //            while ((numCharsRead = isr.read(charArray)) > 0) {
+    //                sb.append(charArray, 0, numCharsRead);
+    //            }
+    //            return sb.toString();
+    //        } catch (MalformedURLException e) {
+    //            String msg = "Malformed URL has occurred in connecting to REST endpoint";
+    //            log.error(msg);
+    //            throw e;
+    //        } catch (IOException e) {
+    //            String msg = "IO exception has occurred in connecting to REST endpoint";
+    //            log.error(msg);
+    //            throw e;
+    //        }
+    //    }
+    private String readUrl(String serviceEndpoint) throws IOException, URISyntaxException {
+        if (log.isDebugEnabled()) {
+            log.debug("Reading URL: " + serviceEndpoint);
         }
-
+        HttpResponse httpResponse = restClient.doGet(new URI(serviceEndpoint));
+        return httpResponse.getContent();
     }
 }

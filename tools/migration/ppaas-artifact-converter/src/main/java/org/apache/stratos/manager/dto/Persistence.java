@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -15,41 +15,30 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */
+ *
+*/
 
-package org.apache.stratos.rest.endpoint.bean.autoscaler.partition;
+package org.apache.stratos.manager.dto;
 
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-@XmlRootElement public class PartitionGroup {
+public class Persistence {
+    private boolean isRequired;
+    private List<Volume> volume;
 
-    private String id;
-    private String partitionAlgo;
-    //partition Ids
-    private List<Partition> partition;
-
-    public String getId() {
-        return id;
+    public boolean isRequired() {
+        return isRequired;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setRequired(boolean required) {
+        isRequired = required;
     }
 
-    public String getPartitionAlgo() {
-        return partitionAlgo;
+    public List<Volume> getVolume() {
+        return volume;
     }
 
-    public void setPartitionAlgo(String partitionAlgo) {
-        this.partitionAlgo = partitionAlgo;
-    }
-
-    public List<Partition> getPartition() {
-        return partition;
-    }
-
-    public void setPartition(List<Partition> partition) {
-        this.partition = partition;
+    public void setVolume(List<Volume> volume) {
+        this.volume = volume;
     }
 }

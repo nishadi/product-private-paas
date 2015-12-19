@@ -17,39 +17,19 @@
  * under the License.
  */
 
-package org.apache.stratos.rest.endpoint.bean.autoscaler.partition;
+package org.apache.stratos.rest.endpoint.bean;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.List;
 
-@XmlRootElement public class PartitionGroup {
+@XmlRootElement public class StratosAdminResponse {
 
-    private String id;
-    private String partitionAlgo;
-    //partition Ids
-    private List<Partition> partition;
+    private String message;
 
-    public String getId() {
-        return id;
+    public String getMessage() {
+        return message;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getPartitionAlgo() {
-        return partitionAlgo;
-    }
-
-    public void setPartitionAlgo(String partitionAlgo) {
-        this.partitionAlgo = partitionAlgo;
-    }
-
-    public List<Partition> getPartition() {
-        return partition;
-    }
-
-    public void setPartition(List<Partition> partition) {
-        this.partition = partition;
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

@@ -20,10 +20,11 @@
 package org.apache.stratos.rest.endpoint.bean.autoscaler.partition;
 
 import org.apache.stratos.rest.endpoint.bean.cartridge.definition.PropertyBean;
+
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-@XmlRootElement
+@XmlRootElement(name = "partition")
 public class Partition {
 
     private String id;
