@@ -17,38 +17,41 @@
  * under the License.
  */
 
-package org.apache.stratos.rest.endpoint.bean.autoscaler.policy.autoscale;
+package org.apache.stratos.rest.endpoint.bean.cartridge.definition;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement public class LoadThresholds {
+@XmlRootElement(name = "portMapping") public class PortMappingBean {
 
-    private RequestsInFlight requestsInFlight;
-    private MemoryConsumption memoryConsumption;
-    private LoadAverage loadAverage;
+    private String protocol;
+    private int port;
+    private int proxyPort;
 
-    public void setRequestsInFlight(RequestsInFlight requestsInFlight) {
-        this.requestsInFlight = requestsInFlight;
+    public String toString() {
+        return " [ Protocol: " + protocol + ", Port: " + port + ", Proxy port: " + proxyPort + "] ";
     }
 
-    public RequestsInFlight getRequestsInFlight() {
-        return requestsInFlight;
+    public String getProtocol() {
+        return protocol;
     }
 
-    public void setMemoryConsumption(MemoryConsumption memoryConsumption) {
-        this.memoryConsumption = memoryConsumption;
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
-    public MemoryConsumption getMemoryConsumption() {
-        return memoryConsumption;
+    public int getPort() {
+        return port;
     }
 
-    public void setLoadAverage(LoadAverage requestsInFlight) {
-        this.loadAverage = loadAverage;
+    public void setPort(int port) {
+        this.port = port;
     }
 
-    public LoadAverage getLoadAverage() {
-        return loadAverage;
+    public int getProxyPort() {
+        return proxyPort;
     }
 
+    public void setProxyPort(int proxyPort) {
+        this.proxyPort = proxyPort;
+    }
 }
